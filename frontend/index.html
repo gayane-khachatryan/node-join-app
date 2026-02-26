@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="hy">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SQL JOIN Homework — Shop UI (Mock Data)</title>
+
+    <style>
+        :root{
+            --navy:#0f2b46;
+            --navy2:#2C74B3;
+            --soft:#f5f7fb;
+            --muted:#6c7a90;
+            --radius:18px;
+            --border:#d8e1ef;
+
+            --paid:#d4edda;
+            --unpaid:#f8d7da;
+            --unknown:#fff3cd;
+
+            --shadow: 0 10px 22px rgba(15,43,70,.08);
+            --white:#fff;
+        }
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--soft);
+            color:#1c2b3a;
+        }
+        .container{
+            max-width: 1200px;
+            margin: 22px auto;
+            padding: 0 16px 50px;
+        }
+
+        .topbar{
+            background: linear-gradient(135deg, var(--navy2), var(--navy));
+            color:#fff;
+            border-radius: var(--radius);
+            padding: 16px 16px;
+            box-shadow: var(--shadow);
+            display:flex;
+            gap:14px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topbar h1{ margin:0; font-size: 18px; }
+        .topbar .sub{ margin:6px 0 0; opacity:.9; font-size: 12px; line-height:1.35; }
+
+        .btn{
+            border:0;
+            cursor:pointer;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 13px;
+            transition: transform .08s ease, opacity .2s ease;
+        }
+        .btn:active{ transform: translateY(1px); }
+        .btn.primary{ background:#fff; color: var(--navy); }
+        .btn.ghost{
+            background: rgba(255,255,255,.14);
+            color:#fff;
+            border:1px solid rgba(255,255,255,.25);
+        }
+
+        .layout{
+            margin-top: 14px;
+            display:grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 980px){
+            .layout{ grid-template-columns: 1fr 360px; }
+        }
+
+        .panel{
+            background: var(--white);
+            border:1px solid var(--border);
+            border-radius: var(--radius);
+            overflow:hidden;
+            box-shadow: var(--shadow);
+        }
+        .panel-head{
+            padding: 14px 14px 12px;
+            border-bottom:1px solid var(--border);
+            display:flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .panel-title{
+            margin:0;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--navy);
+            display:flex;
+            gap:10px;
+            align-items:center;
+        }
+        .tag{
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border:1px solid var(--border);
+            background:#f7fbff;
+            color: var(--navy2);
+            white-space: nowrap;
+        }
+        .panel-body{ padding: 12px 14px 14px; }
+
+        .tabs{
+            display:flex;
+            gap:8px;
+            flex-wrap: wrap;
+        }
+        .tab{
+            border:1px solid var(--border);
+            background:#fff;
+            color:#223;
+            font-weight: 900;
+            font-size: 12px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            cursor:pointer;
+            transition: .15s;
+        }
+        .tab.active{
+            background: #eaf3ff;
+            border-color: #cfe3ff;
+            color: var(--navy);
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 600px){
+            .grid{ grid-template-columns: 1fr 1fr; }
+        }
+        @media (min-width: 980px){
+            .grid{ grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .card{
+            border:1px solid var(--border);
+            border-radius: 16px;
+            overflow:hidden;
+            background:#fff;
+            display:flex;
+            flex-direction: column;
+            min-height: 170px;
+        }
+        .card-top{
+            padding: 12px 12px 10px;
+            display:flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items:flex-start;
+            border-bottom:1px solid var(--border);
+            background: #fbfdff;
+        }
+        .badge{
+            font-size: 11px;
+            font-weight: 900;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border:1px solid var(--border);
+            white-space: nowrap;
+        }
+        .badge.paid{ background: var(--paid); }
+        .badge.unpaid{ background: var(--unpaid); }
+        .badge.unknown{ background: var(--unknown); }
+
+        .card-title{
+            margin:0;
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--navy);
+            line-height:1.25;
+        }
+        .card-sub{
+            margin:6px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height:1.35;
+        }
+
+        .card-mid{
+            padding: 12px;
+            display:grid;
+            gap: 8px;
+        }
+        .kv{
+            display:flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+            color:#2b3a4a;
+        }
+        .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+        .card-actions{
+            margin-top:auto;
+            padding: 12px;
+            display:flex;
+            gap: 10px;
+            align-items:center;
+            justify-content: space-between;
+            border-top:1px solid var(--border);
+        }
+        .price{
+            font-weight: 1000;
+            color: #101c2a;
+        }
+        .add{
+            padding: 10px 12px;
+            border-radius: 12px;
+            border:0;
+            cursor:pointer;
+            font-weight: 900;
+            background: var(--navy2);
+            color:#fff;
+        }
+        .add:disabled{ opacity:.45; cursor:not-allowed; }
+
+        .cart-list{
+            display:grid;
+            gap:10px;
+        }
+        .cart-item{
+            border:1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 10px;
+            background:#fff;
+        }
+        .cart-item .t{
+            font-weight: 900;
+            color: var(--navy);
+            font-size: 12px;
+            margin:0 0 6px;
+            line-height:1.25;
+        }
+        .cart-item .m{
+            font-size: 12px;
+            color: var(--muted);
+            display:flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .qty{
+            display:flex;
+            align-items:center;
+            gap: 8px;
+            margin-top: 8px;
+            justify-content: space-between;
+        }
+        .qty .controls{ display:flex; gap: 6px; align-items:center; }
+        .mini{
+            border:1px solid var(--border);
+            background:#fff;
+            padding: 6px 10px;
+            border-radius: 10px;
+            cursor:pointer;
+            font-weight: 900;
+            font-size: 12px;
+        }
+        .mini.danger{
+            border-color:#ffd0d0;
+            background:#fff2f2;
+            color:#8a1f1f;
+        }
+
+        .summary{
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top:1px dashed var(--border);
+            display:grid;
+            gap: 6px;
+            font-size: 12px;
+            color:#2b3a4a;
+        }
+        .summary .row{ display:flex; justify-content: space-between; gap:10px; }
+        .empty{
+            padding: 12px;
+            border:1px dashed var(--border);
+            border-radius: 14px;
+            color: var(--muted);
+            font-size: 12px;
+            background:#fbfdff;
+            text-align:center;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="topbar">
+        <div>
+            <h1>SQL JOIN Homework — Shop UI (Mock Data)</h1>
+            <div class="sub">
+                INNER/LEFT/RIGHT տվյալները JS-ի մեջ են։ Tabs-ով փոխիր join-ը, ավելացրու քարտերը Cart։
+                <span class="mono">status: paid | unpaid | unknown</span>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn primary" id="btnReset">Reset data</button>
+            <button class="btn ghost" id="btnClearCart">Clear cart</button>
+        </div>
+    </div>
+
+    <div class="layout">
+
+        <!-- SHOP -->
+        <section class="panel">
+            <div class="panel-head">
+                <div class="panel-title">
+                    Shop
+                    <span class="tag" id="tagInfo">INNER • 0 items</span>
+                </div>
+                <div class="tabs" id="tabs">
+                    <button class="tab active" data-tab="inner">INNER</button>
+                    <button class="tab" data-tab="left">LEFT</button>
+                    <button class="tab" data-tab="right">RIGHT</button>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <div class="grid" id="grid"></div>
+            </div>
+        </section>
+
+        <!-- CART -->
+        <aside class="panel">
+            <div class="panel-head">
+                <div class="panel-title">
+                    Cart
+                    <span class="tag" id="cartCount">2 items</span>
+                </div>
+                <button class="btn ghost" id="btnCartClear" style="padding:8px 10px; font-size:12px;">
+                    Clear cart
+                </button>
+            </div>
+
+            <div class="panel-body">
+                <div class="cart-list" id="cartList">
+                    <div class="cart-item">
+                        <div class="t">Gevorg <span class="mono" style="opacity:.7;">#3</span></div>
+                        <div class="m">
+                            <span>JS-2 • January • <span class="mono">RIGHT</span></span>
+                            <b class="mono">70,000</b>
+                        </div>
+
+                        <div class="qty">
+                            <div class="controls">
+                                <button class="mini" data-dec="3::right">−</button>
+                                <b class="mono">1</b>
+                                <button class="mini" data-inc="3::right">+</button>
+                            </div>
+                            <div class="controls">
+                                <button class="mini danger" data-rm="3::right">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cart-item">
+                        <div class="t">Anna <span class="mono" style="opacity:.7;">#2</span></div>
+                        <div class="m">
+                            <span>JS-1 • January • <span class="mono">RIGHT</span></span>
+                            <b class="mono">55,000</b>
+                        </div>
+
+                        <div class="qty">
+                            <div class="controls">
+                                <button class="mini" data-dec="2::right">−</button>
+                                <b class="mono">1</b>
+                                <button class="mini" data-inc="2::right">+</button>
+                            </div>
+                            <div class="controls">
+                                <button class="mini danger" data-rm="2::right">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary" id="summary">
+                    <div class="row"><span>Total qty</span><b id="sumQty">2</b></div>
+                    <div class="row"><span>Total amount</span><b class="mono" id="sumAmount">125,000</b></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script src="script.js"type="module"></script>
+
+</body>
+</html>
